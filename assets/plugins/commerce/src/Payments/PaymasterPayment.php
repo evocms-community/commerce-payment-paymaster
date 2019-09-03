@@ -4,14 +4,6 @@ namespace Commerce\Payments;
 
 class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
 {
-    public function init()
-    {
-        return [
-            'code'  => 'paymaster',
-            'title' => 'Paymaster',
-        ];
-    }
-
     public function getMarkup()
     {
         $out = [];
@@ -150,7 +142,7 @@ class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
         try {
             $processor->processPayment($data['COMMERCE_PAYMENT_ID'], floatval($data['LMI_PAID_AMOUNT']));
         } catch (\Exception $e) {
-            $this->modx->logEvent(0, 3, 'Signature check failed: ' . $signature . ' != ' . $data['LMI_HASH'], 'Commerce Paymaster Payment');
+            $this->modx->logEvent(0, 3, 'Payment process failed: ' . $e->getMessage(), 'Commerce Paymaster Payment');
             return false;
         }
 
