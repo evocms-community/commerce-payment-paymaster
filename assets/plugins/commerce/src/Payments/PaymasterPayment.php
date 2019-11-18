@@ -4,16 +4,22 @@ namespace Commerce\Payments;
 
 class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
 {
+    public function __construct($modx, array $params = [])
+    {
+        parent::__construct($modx, $params);
+        $this->lang = $modx->commerce->getUserLanguage('paymaster');
+    }
+
     public function getMarkup()
     {
         $out = [];
 
         if (empty($this->getSetting('shop_id'))) {
-            $out[] = $this->lang['payments.error_empty_shop_id'];
+            $out[] = $this->lang['paymaster.error_empty_shop_id'];
         }
 
         if (empty($this->getSetting('secret'))) {
-            $out[] = $this->lang['payments.error_empty_secret'];
+            $out[] = $this->lang['paymaster.error_empty_secret'];
         }
 
         $out = implode('<br>', $out);

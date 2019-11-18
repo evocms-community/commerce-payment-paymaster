@@ -17,22 +17,39 @@ if (empty($modx->commerce) && !defined('COMMERCE_INITIALIZED')) {
     return;
 }
 
+$commerce = ci()->commerce;
+$lang = $commerce->getUserLanguage('paymaster');
+$isSelectedPayment = !empty($order['fields']['payment_method']) && $order['fields']['payment_method'] == 'paymaster';
+
 switch ($modx->event->name) {
     case 'OnRegisterPayments': {
         $class = new \Commerce\Payments\PaymasterPayment($modx, $params);
 
         if (empty($params['title'])) {
-            $lang = $modx->commerce->getUserLanguage('paymaster');
             $params['title'] = $lang['paymaster.caption'];
         }
 
-        $modx->commerce->registerPayment('paymaster', $params['title'], $class);
+        $commerce->registerPayment('paymaster', $params['title'], $class);
         break;
     }
 
     case 'OnBeforeOrderSending': {
-        if (!empty($order['fields']['payment_method']) && $order['fields']['payment_method'] == 'paymaster') {
-            $FL->setPlaceholder('extra', $FL->getPlaceholder('extra', '') . $modx->commerce->loadProcessor()->populateOrderPaymentLink());
+        if ($isSelectedPayment) {
+            $FL->setPlaceholder('extra', $FL->getPlaceholder('extra', '') . $commerce->loadProcessor()->populateOrderPaymentLink());
+        }
+
+        break;
+    }
+
+    case 'OnManagerBeforeOrderRender': {
+        if (isset($params['groups']['payment_delivery']) && $isSelectedPayment) {
+            $params['groups']['payment_delivery']['fields']['payment_link'] = [
+                'title'   => $lang['paymaster.link_caption'],
+                'content' => function($data) use ($modx) {
+                    return $commerce->loadProcessor()->populateOrderPaymentLink('@CODE:<a href="[+link+]" target="_blank">[+link+]</a>');
+                },
+                'sort' => 50,
+            ];
         }
 
         break;
