@@ -45,7 +45,7 @@ class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
             'COMMERCE_PAYMENT_ID'   => $payment['id'],
             'COMMERCE_PAYMENT_HASH' => $payment['hash'],
             'LMI_MERCHANT_ID'       => $this->getSetting('shop_id'),
-            'LMI_PAYMENT_AMOUNT'    => $order['amount'],
+            'LMI_PAYMENT_AMOUNT'    => number_format($payment['amount'], 2, '.', ''),
             'LMI_CURRENCY'          => $currency['code'],
             'LMI_PAYMENT_NO'        => $order['id'],
             'LMI_PAYMENT_DESC'      => ci()->tpl->parseChunk($this->lang['payments.payment_description'], [
@@ -67,15 +67,24 @@ class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
         }
 
         if (!empty($order['phone']) || !empty($order['email'])) {
-            $position = 1;
+            $items = $this->prepareItems($processor->getCart());
             $vat_code = $this->getSetting('vat_code');
 
-            foreach ($processor->getCart()->getItems() as $item) {
-                $key = 'LMI_SHOPPINGCART.ITEMS[' . $position++ . ']';
-                $data["$key.NAME"]  = mb_substr($item['name'], 0, 64);
-                $data["$key.QTY"]   = $item['count'];
-                $data["$key.PRICE"] = $item['price'] * $item['count'];
-                $data["$key.TAX"]   = $vat_code;
+            $isPartialPayment = $payment['amount'] < $order['amount'];
+
+            if ($isPartialPayment) {
+                $items = $this->decreaseItemsAmount($items, $order['amount'], $payment['amount']);
+            }
+
+            foreach ($items as $i => $item) {
+                $key = 'LMI_SHOPPINGCART.ITEMS[' . ($i + 1 ) . ']';
+
+                $data["$key.NAME"]    = mb_substr($item['name'], 0, 64);
+                $data["$key.QTY"]     = $item['count'];
+                $data["$key.PRICE"]   = $item['price'];
+                $data["$key.TAX"]     = $vat_code;
+                $data["$key.METHOD"]  = $isPartialPayment ? 2 : 1;
+                $data["$key.SUBJECT"] = $item['product'] ? 1 : 4;
             }
         }
 
