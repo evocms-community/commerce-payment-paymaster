@@ -45,7 +45,7 @@ switch ($modx->event->name) {
         if (isset($params['groups']['payment_delivery']) && $isSelectedPayment) {
             $params['groups']['payment_delivery']['fields']['payment_link'] = [
                 'title'   => $lang['paymaster.link_caption'],
-                'content' => function($data) use ($modx) {
+                'content' => function($data) use ($modx, $commerce) {
                     return $commerce->loadProcessor()->populateOrderPaymentLink('@CODE:<a href="[+link+]" target="_blank">[+link+]</a>');
                 },
                 'sort' => 50,
