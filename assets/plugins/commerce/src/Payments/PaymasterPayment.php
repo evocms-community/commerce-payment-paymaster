@@ -77,7 +77,7 @@ class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
             }
 
             foreach ($items as $i => $item) {
-                $key = 'LMI_SHOPPINGCART.ITEMS[' . ($i + 1 ) . ']';
+                $key = 'LMI_SHOPPINGCART.ITEMS[' . ($i) . ']';
 
                 $data["$key.NAME"]    = mb_substr($item['name'], 0, 64);
                 $data["$key.QTY"]     = $item['count'];
