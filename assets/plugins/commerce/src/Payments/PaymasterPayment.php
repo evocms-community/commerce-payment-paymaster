@@ -98,6 +98,7 @@ class PaymasterPayment extends Payment implements \Commerce\Interfaces\Payment
 
         return $view->render('payment_form.tpl', [
             'url'  => 'https://paymaster.ru/Payment/Init',
+	    'method' => 'post',
             'data' => $data,
         ]);
     }
